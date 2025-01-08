@@ -1,0 +1,9 @@
+WHOLE a=100+25/(6-1)
+DECIMAL b=25.7
+WORD c=`hello`
+FLAG d=TRUE
+
+WRITE a
+write b
+WRITE c
+WRITE d
