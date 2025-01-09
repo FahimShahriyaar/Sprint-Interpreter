@@ -69,16 +69,21 @@ class Interpret:
         elif flag['FLAG']: return ('FLAG',string)
 
     def declaration(self,stmt):
-        # print(stmt)
+        print(stmt)
         if stmt.id in self.symbols:
             raise Exception(f'{stmt.id} is already declared')
-        elif stmt.value is None: self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,'None')
         else:
-            expr_value=self.normalize_expression(stmt.value)
-            if stmt.data_type==expr_value[0]:
-                self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,expr_value[1])
-            else:
-                raise Exception('Type Declaration Mismatch')
+            if stmt.decl_type=='data':
+                if stmt.value is None: self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,'None')
+                else:
+                    expr_value=self.normalize_expression(stmt.value)
+                    if stmt.data_type==expr_value[0]:
+                        self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,expr_value[1])
+                    else:
+                        raise Exception('Type Declaration Mismatch')
+            elif stmt.decl_type=='function':
+                self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,stmt.value)
+
         # print(self.symbols)
 
     def assignment(self,stmt):
@@ -102,6 +107,7 @@ class Interpret:
         self.declaration(nodes.Declaration('data','WORD',exp.id,wrap_data))
 
     def loop(self,stmt):
+        print(stmt)
         for i in range(stmt.FROM,stmt.TO,stmt.BY):
             self.run(stmt.body)
 
@@ -112,6 +118,16 @@ class Interpret:
             self.conditional(stmt.next)
         elif type(stmt.next)==list:
             self.run(stmt.next)
+
+    def call_action(self,stmt):
+        print(stmt)
+        if stmt.id in self.symbols:
+            x=[]
+            
+            for i in stmt.params:
+                t=self.normalize_expression(i)
+            print(x)
+        else: raise Exception('id not found')
 
     def run(self,code=None):
         try:
@@ -128,6 +144,8 @@ class Interpret:
                     self.loop(i)
                 elif i.__class__.__name__=='Conditional':
                     self.conditional(i)
+                elif i.__class__.__name__=='Call_Action':
+                    self.call_action(i)
       
         except Exception as e:
             print("Error: ", e)

@@ -5,7 +5,7 @@ literals = ( '+','-','*','/','<','>','=','(',')','{','}','[',']',',',';' )
 keywords = (
     'WHOLE', 'DECIMAL', 'WORD', 'FLAG', 
     'READ', 'WRITE', 'LOOP', 'WHEN', 'OTHERWISE',
-    'FROM', 'TO', 'BY'
+    'FROM', 'TO', 'BY', 'ACTION', 'CALL'
 )
 
 tokens = keywords + (
@@ -24,7 +24,7 @@ t_ignore_COMMENT = r'\#.*'
 def t_ID(t):
     r'[A-Za-z][A-Za-z0-9]*'
     if t.value.upper() in keywords:
-        t.type = t.value.upper()
+        t.type =t.value = t.value.upper()
     elif t.value.upper() in ['TRUE','FALSE']:
         t.type='BOOL'
         t.value=t.value.upper()

@@ -22,7 +22,9 @@ def p_statement(p):
                  | print
                  | read
                  | loop
-                 | conditional'''
+                 | conditional
+                 | function
+                 | call'''
 
     p[0]=p[1]
 
@@ -61,6 +63,22 @@ def p_when_otherwise(p):
     elif len(p)==3:
         p[0]=p[2]
 
+def p_function(p):
+    '''function : ACTION type ID '{' params '}' body'''
+
+    p[0]=Declaration('function',p[2],p[3],p[7],p[5])
+
+def p_params(p):
+    '''params : params type ID 
+              | type ID
+              | '''
+    
+    if len(p)==1:
+        p[0]=None
+    elif len(p)==3:
+        p[0]=[Parameter(p[1],p[2])]
+    elif len(p)==4:
+        p[0]=p[1]+[Parameter(p[2],p[3])]
 
 def p_body(p):
     '''body : '[' program ']' '''
@@ -76,6 +94,23 @@ def p_read(p):
     '''read : READ ID '''
 
     p[0]=Read(p[2])
+
+def p_call(p):
+    '''call : CALL ID '{' arg '}' '''
+
+    p[0]=Call_Action(p[2],p[4])
+
+def p_arg(p):
+    '''arg : arg expr
+           | expr
+           |'''
+    
+    if len(p)==1:
+        p[0]=None
+    elif len(p)==2:
+        p[0]=[p[1]]
+    elif len(p)==3:
+        p[0]=p[1]+[p[2]]
 
 def p_expression(p):
     '''expr : expr '+' expr
@@ -125,7 +160,7 @@ def p_error(p):
     parser.error=1
 
 # Build the parser
-parser = yacc.yacc(debug=False,tabmodule=None)
+parser = yacc.yacc(debug=False)
 
 def parse(data):
     parser.error = 0

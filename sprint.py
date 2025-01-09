@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 2:
         try:
-            if sys.argv[1][-4:]!='.fox':
+            if sys.argv[1][-4:]!='.spr':
                 raise Exception('Error: fox file missing')
             with open(sys.argv[1]) as file:
                 data = file.read()

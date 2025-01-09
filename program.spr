@@ -1,9 +1,6 @@
-WHOLE a=100+25/(6-1)
-DECIMAL b=25.7
-WORD c=`hello`
-FLAG d=TRUE
+ACTION WHOLE power {WHOLE a FLAG b}
+[
+    WHOLE a=20
+]
 
-WRITE a
-write b
-WRITE c
-WRITE d
+CALL power {20 50}
