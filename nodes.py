@@ -73,3 +73,9 @@ class Call_Action:
 
     def __repr__(self):
         return f'Call :: {self.id} {self.params}'
+    
+class activation_record:
+    def __init__(self,function_name,arguments):
+        self.function_name=function_name
+        self.arguments=arguments
+        self.param_arg_map={}

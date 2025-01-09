@@ -1,6 +1,6 @@
-ACTION WHOLE power {WHOLE a FLAG b}
+ACTION WHOLE power {WHOLE a WHOLE b}
 [
-    WHOLE a=20
+    write 20
 ]
 
-CALL power {20 50}
+CALL power {}

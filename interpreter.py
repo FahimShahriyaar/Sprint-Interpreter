@@ -10,6 +10,19 @@ class Interpret:
     def id_exist(self,id):
         return id in self.symbols
     
+    def parameter_check(self):
+        current_record=self.stack[-1]
+        if len(self.symbols[current_record.function_name].params) != len(current_record.arguments):
+            raise Exception('Number of arguments error')
+        else:
+            evaluated_call_time_arg=[self.normalize_expression(i) for i in current_record.arguments]
+            t={}
+            for i,j in zip(self.symbols[current_record.function_name].params, evaluated_call_time_arg):
+                if i.type==j[0]: t[i.id]=j[1]
+                else : raise Exception('Argument Type Mismatch')
+            current_record.param_arg_map=t
+        return True
+    
     def format_number(self,value):
         if isinstance(value, int):
             return ('WHOLE',value)
@@ -35,13 +48,13 @@ class Interpret:
                     continue
                 else: raise Exception('Type Evaluation Mismatch')
             else:
-                if (i.type=='INTEGER' or i.type=='FLOAT') and not flag['WORD'] and not flag['FLAG']:
+                if (i.type=='WHOLE' or i.type=='DECIMAL') and not flag['WORD'] and not flag['FLAG']:
                     flag['WHOLE']=True
                     string+=i.value
-                elif i.type=='STRING' and not flag['WHOLE'] and not flag['DECIMAL'] and not flag['FLAG']:
+                elif i.type=='WORD' and not flag['WHOLE'] and not flag['DECIMAL'] and not flag['FLAG']:
                     flag['WORD']=True
                     string+=i.value
-                elif i.type=='BOOL' and len(exp)==1:
+                elif i.type=='FLAG' and len(exp)==1:
                     flag['FLAG']=True
                     string+=i.value
                 elif i.type=='ID':
@@ -82,7 +95,7 @@ class Interpret:
                     else:
                         raise Exception('Type Declaration Mismatch')
             elif stmt.decl_type=='function':
-                self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,stmt.value)
+                self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,stmt.value,stmt.params)
 
         # print(self.symbols)
 
@@ -122,11 +135,9 @@ class Interpret:
     def call_action(self,stmt):
         print(stmt)
         if stmt.id in self.symbols:
-            x=[]
-            
-            for i in stmt.params:
-                t=self.normalize_expression(i)
-            print(x)
+            # self.stack.append(nodes.activation_record(stmt.id,stmt.params))
+            # print(self.parameter_check())
+            self.run(self.symbols[stmt.id].value)
         else: raise Exception('id not found')
 
     def run(self,code=None):
@@ -162,4 +173,4 @@ class Symbol:
         self.value=value
 
     def __repr__(self):
-        return f'{self.symbol_type}->{self.data_type}->{self.value}'
+        return f'Symbol -> {self.symbol_type} {self.data_type} {self.params} = {self.value}'

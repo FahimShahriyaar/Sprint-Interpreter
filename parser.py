@@ -2,6 +2,8 @@ import ply.yacc as yacc
 from lexer import tokens
 from nodes import *
 
+type_map={'INTEGER':'WHOLE','FLOAT':'DECIMAL','STRING':'WORD','BOOL':'FLAG'}
+
 precedence = (
     ('left', '+', '-'),
     ('left', '*', '/')
@@ -152,7 +154,7 @@ def p_expr_val(p):
                | ID'''
     
 
-    p[0]=Data(p.slice[1].type,str(p[1].strip('`')))
+    p[0]=Data(type_map[p.slice[1].type],str(p[1].strip('`')))
 
 
 def p_error(p):
