@@ -8,15 +8,14 @@ keywords = (
     'FROM', 'TO', 'BY', 'ACTION', 'CALL'
 )
 
-tokens = keywords + (
-    'INTEGER', 'FLOAT', 'STRING', 'BOOL', 'ID'
-)
+
+tokens = ('INT', 'FLOAT', 'STR', 'BOOL', 'ID') + keywords
 
 # Token regex patterns
 # t_BOOL = r'TRUE'
-t_INTEGER = r'\d+'
+t_INT = r'\d+'
 t_FLOAT = r'((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
-t_STRING = r'`.*?`'
+t_STR = r'`.*?`'
 t_ignore_COMMENT = r'\#.*'
 
 # ID
@@ -24,10 +23,10 @@ t_ignore_COMMENT = r'\#.*'
 def t_ID(t):
     r'[A-Za-z][A-Za-z0-9]*'
     if t.value.upper() in keywords:
-        t.type =t.value = t.value.upper()
+        t.type = t.value = t.value.upper()
     elif t.value.upper() in ['TRUE','FALSE']:
         t.type='BOOL'
-        t.value=t.value.upper()
+        t.value=t.value.capitalize()
     return t
 
 
@@ -41,8 +40,9 @@ def t_NEWLINE(t):
 
 # Error handling
 def t_error(t):
-    print(f"Illegal character '{t.value[0]}'")
-    t.lexer.skip(1)
+    # print(f"Illegal character {t}'")
+    # t.lexer.skip(1)
+    raise SyntaxError(f"Illegal character '{t.value[0]}' at line {t.lineno}, position {t.lexpos}")
 
 # Build the lexer
 lexer = lex.lex(debug=False,errorlog=None)

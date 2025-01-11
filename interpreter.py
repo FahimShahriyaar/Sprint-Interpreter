@@ -1,114 +1,96 @@
 import nodes
-
+type_map={'WHOLE':int,'DECIMAL':float,'WORD':str,'FLAG':bool}
+reverse_type_map={int:'WHOLE',float:'DECIMAL',str:'WORD',bool:'FLAG'}
 class Interpret:
     def __init__(self,code):
         self.code=code
         self.symbols={}
         self.stack=[]
-        self.loop_info={'FROM':None,'TO':None,'BY':None}
 
-    def id_exist(self,id):
-        return id in self.symbols
-    
-    def parameter_check(self):
-        current_record=self.stack[-1]
-        if len(self.symbols[current_record.function_name].params) != len(current_record.arguments):
-            raise Exception('Number of arguments error')
+    def id_exist(self,id,decl_state=False):
+        if decl_state:
+            if id in self.stack[-1].locals:
+                return self.stack[-1].locals[id]
+            else: return False
         else:
-            evaluated_call_time_arg=[self.normalize_expression(i) for i in current_record.arguments]
-            t={}
-            for i,j in zip(self.symbols[current_record.function_name].params, evaluated_call_time_arg):
-                if i.type==j[0]: t[i.id]=j[1]
-                else : raise Exception('Argument Type Mismatch')
-            current_record.param_arg_map=t
-        return True
+            if self.stack[-1].arguments is not None and id in self.stack[-1].arguments:
+                return self.stack[-1].arguments[id]
+            else:
+                for i in self.stack[::-1]:
+                    if id in i.locals:
+                        return i.locals[id]
+                    else: continue
+                return False
+        
+    
+    def parameter_check(self,stmt):
+        t={}
+        if id_exist:=self.id_exist(stmt.id):
+           if stmt.params is None and id_exist.params is None:
+               return t,id_exist.value
+           elif len(stmt.params)!=len(id_exist.params):
+               raise Exception('argument length error')
+           else:
+            for i,j in zip(stmt.params,id_exist.params):
+                expr_value=self.normalize_expression(i)
+                if expr_value[0] is not type_map[j.type]: raise Exception('argument type error')
+                else: t[j.id]=expr_value
+            return t,id_exist.value
+        else: return False
+        
     
     def format_number(self,value):
-        if isinstance(value, int):
-            return ('WHOLE',value)
-        elif isinstance(value, float) and value.is_integer():
-            return ('WHOLE',int(value) )
-        else: return ('DECIMAL',value)
+        if isinstance(value, float) and value.is_integer(): return int(value)
+        else: return value
 
-    def normalize_expression(self,exp):
+    def normalize_expression(self,exp):  
         flag={'WHOLE':False,'DECIMAL':False,'WORD':False,'FLAG':False,'COMP_OP':False}
         string=''
-        
         for i in exp:
-            if type(i) is str:
-                if i in ['<','>','=']:
-                    if flag['WORD'] or flag['FLAG']:
-                        raise Exception("string/bool can't be compared")
-                    else:
-                        flag['COMP_OP']=True
-                        string+=i
-                elif flag['WHOLE'] or flag['DECIMAL']:
-                    string+=i
-                elif flag['WORD'] and i=='+':
-                    continue
-                else: raise Exception('Type Evaluation Mismatch')
-            else:
-                if (i.type=='WHOLE' or i.type=='DECIMAL') and not flag['WORD'] and not flag['FLAG']:
-                    flag['WHOLE']=True
-                    string+=i.value
-                elif i.type=='WORD' and not flag['WHOLE'] and not flag['DECIMAL'] and not flag['FLAG']:
-                    flag['WORD']=True
-                    string+=i.value
-                elif i.type=='FLAG' and len(exp)==1:
-                    flag['FLAG']=True
-                    string+=i.value
-                elif i.type=='ID':
-                    if i.value in self.symbols:
-                        id_type=self.symbols[i.value].data_type
-                        id_value=str(self.symbols[i.value].value)
-                        if exp[0].type=='ID':
-                            string+=id_value
-                            flag[id_type]=True
-                        elif (flag['WHOLE'] or flag['DECIMAL']) and id_type in ['WHOLE', 'DECIMAL']:
-                            string+=id_value
-                        elif flag['WORD'] and id_type=='WORD':
-                            string+=id_value
-                        else: raise Exception('Type Evaluation Mismatch')
-                    else: raise Exception(f'{i.value} is not found')
+            if i.type=='ID':
+                if id_exist:=self.id_exist(i.value):
+                    if id_exist.data_type=='WORD': string+=f'\"{id_exist.value}\"'
+                    else: string+=id_exist.value
+                else: raise Exception(f'[{i.value}] not found')
+            elif i.type=='WORD': string+=f'\"{i.value}\"'
+            else: string+=i.value
 
-                else: raise Exception('Type Evaluation Mismatch')
-            
-        if flag['COMP_OP']:
-            return('FLAG',eval(string))
-        elif flag['WORD']:
-            return ('WORD',string)
-        elif flag['WHOLE'] or flag['DECIMAL']:
-            return self.format_number(eval(string))
-        elif flag['FLAG']: return ('FLAG',string)
+        try:
+            x=eval(string)
+            if type(x) is float: x=self.format_number(x)
+            return (type(x),str(x))
+        except: raise Exception('Evaluation error')
+        
 
     def declaration(self,stmt):
-        print(stmt)
-        if stmt.id in self.symbols:
-            raise Exception(f'{stmt.id} is already declared')
+        # print(stmt)
+        if self.id_exist(stmt.id,True):
+            raise Exception(f'[{stmt.id}] is already declared')
         else:
-            if stmt.decl_type=='data':
-                if stmt.value is None: self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,'None')
+            if stmt.decl_type=='variable':
+                if stmt.value is None: self.stack[-1].locals[stmt.id]=Symbol(stmt.decl_type,stmt.data_type)
                 else:
                     expr_value=self.normalize_expression(stmt.value)
-                    if stmt.data_type==expr_value[0]:
-                        self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,expr_value[1])
-                    else:
-                        raise Exception('Type Declaration Mismatch')
+                    # print(expr_value)
+                    if expr_value[0] is type_map[stmt.data_type]:
+                        self.stack[-1].locals[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,expr_value[1])
+                    else: raise Exception('Type Error')
             elif stmt.decl_type=='function':
-                self.symbols[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,stmt.value,stmt.params)
-
-        # print(self.symbols)
+                self.stack[-1].locals[stmt.id]=Symbol(stmt.decl_type,stmt.data_type,stmt.value,stmt.params)
+            
+            # print(self.stack,self.stack[-1].locals)
 
     def assignment(self,stmt):
-        if stmt.id in self.symbols:
+        # print(stmt)
+        if id_exist:=self.id_exist(stmt.id):
             expr_value=self.normalize_expression(stmt.value)
-            if self.symbols[stmt.id].data_type==expr_value[0]:
-                self.symbols[stmt.id].changeValue(expr_value)
+            if expr_value[0] is type_map[id_exist.data_type]:
+                id_exist.changeValue(str(expr_value[1]))
             else:
                 raise Exception('Type mismatch')
         else:
-            raise Exception(f'{stmt.id} is not found')
-        # print(self.symbols)
+            raise Exception(f'[{stmt.id}] is not found')
+        # print(id_exist)
 
     def printing(self,exp):
         expr_value=self.normalize_expression(exp.value)
@@ -116,32 +98,37 @@ class Interpret:
 
     def reading(self,exp):
         input_data=input()
-        wrap_data=[nodes.Data('STRING',input_data)]
-        self.declaration(nodes.Declaration('data','WORD',exp.id,wrap_data))
+        wrap_data=[nodes.Data('WORD',input_data)]
+        self.declaration(nodes.Declaration('variable','WORD',exp.id,wrap_data))
 
     def loop(self,stmt):
-        print(stmt)
+        # print(stmt)
         for i in range(stmt.FROM,stmt.TO,stmt.BY):
-            self.run(stmt.body)
+            self.lp_index=i
+            self.run('loop',stmt.body)
 
     def conditional(self,stmt):
-        if self.normalize_expression(stmt.exp)[1]:
-            self.run(stmt.body)
+        # print(stmt)
+        if eval(self.normalize_expression(stmt.exp)[1]):
+            self.run('if',stmt.body)
         elif type(stmt.next)==nodes.Conditional:
             self.conditional(stmt.next)
         elif type(stmt.next)==list:
-            self.run(stmt.next)
+            self.run('else',stmt.next)
 
     def call_action(self,stmt):
-        print(stmt)
-        if stmt.id in self.symbols:
-            # self.stack.append(nodes.activation_record(stmt.id,stmt.params))
-            # print(self.parameter_check())
-            self.run(self.symbols[stmt.id].value)
-        else: raise Exception('id not found')
+        # print(stmt)
+        arg_body=self.parameter_check(stmt)
+        if arg_body:
+            self.run('action',arg_body[1],arg_body[0])
+        else: raise Exception(f'[{stmt.id}] not found')
 
-    def run(self,code=None):
+    def run(self,scope=None,code=None, arg=None):
         try:
+            if code is None: self.stack.append(activation_record('main'))
+            elif arg is None: self.stack.append(activation_record(scope))
+            else: self.stack.append(activation_record(scope,arg))
+    
             for i in self.code if code is None else code:
                 if i.__class__.__name__=='Declaration':
                     self.declaration(i)
@@ -157,6 +144,9 @@ class Interpret:
                     self.conditional(i)
                 elif i.__class__.__name__=='Call_Action':
                     self.call_action(i)
+            
+            # print(self.stack[-1])
+            self.stack.pop()
       
         except Exception as e:
             print("Error: ", e)
@@ -174,3 +164,18 @@ class Symbol:
 
     def __repr__(self):
         return f'Symbol -> {self.symbol_type} {self.data_type} {self.params} = {self.value}'
+    
+
+class activation_record:
+    def __init__(self,scope,arguments=None):
+        self.scope=scope
+        self.locals={}
+        self.arguments={}
+        if arguments is not None:
+            for i in arguments:
+                self.arguments[i]=Symbol('argument',reverse_type_map[arguments[i][0]],arguments[i][1])
+        else: self.arguments=arguments
+
+    
+    def __repr__(self):
+        return f'{self.scope}  {self.locals} {self.arguments}'

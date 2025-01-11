@@ -2,7 +2,7 @@ import ply.yacc as yacc
 from lexer import tokens
 from nodes import *
 
-type_map={'INTEGER':'WHOLE','FLOAT':'DECIMAL','STRING':'WORD','BOOL':'FLAG'}
+type_map={'INT':'WHOLE','FLOAT':'DECIMAL','STR':'WORD','BOOL':'FLAG','ID':'ID'}
 
 precedence = (
     ('left', '+', '-'),
@@ -35,9 +35,9 @@ def p_declaration(p):
                    | type ID '=' expr'''
 
     if len(p)==3:
-        p[0]=Declaration('data',p[1],p[2])
+        p[0]=Declaration('variable',p[1],p[2])
     else:
-        p[0]=Declaration('data',p[1],p[2],p[4])
+        p[0]=Declaration('variable',p[1],p[2],p[4])
 
 def p_assignment(p):
     '''assignment : ID '=' expr'''
@@ -45,7 +45,7 @@ def p_assignment(p):
     p[0]=Assignment(p[1],p[3])
 
 def p_loop(p):
-    '''loop : LOOP FROM INTEGER TO INTEGER BY INTEGER body'''
+    '''loop : LOOP FROM INT TO INT BY INT body'''
 
     p[0]=Loop(int(p[3]),int(p[5]),int(p[7]),p[8])
 
@@ -88,7 +88,7 @@ def p_body(p):
     p[0]=p[2]
 
 def p_print(p):
-    '''print : WRITE expr '''
+    '''print : WRITE expr'''
 
     p[0]=Print(p[2])
 
@@ -115,16 +115,7 @@ def p_arg(p):
         p[0]=p[1]+[p[2]]
 
 def p_expression(p):
-    '''expr : expr '+' expr
-            | expr '-' expr
-            | expr '*' expr
-            | expr '/' expr
-            | expr '<' expr
-            | expr '>' expr
-            | expr '<' '=' expr
-            | expr '>' '=' expr
-            | expr '=' '=' expr
-            | expr '<' '>' expr
+    '''expr : expr opr expr
             | '(' expr ')'
             | expr_val'''
     
@@ -132,11 +123,11 @@ def p_expression(p):
         p[0]=[p[1]]
     elif len(p)==4:
         if p[1]=='(' and p[3]==')':
-            p[0]=[p[1]]+p[2]+[p[3]]
+            p[0]=[Data('OPR',p[1])]+p[2]+[Data('OPR',p[3])]
         else:
             p[0]=p[1]+[p[2]]+p[3]
-    elif len(p)==5:
-        p[0]=p[1]+[p[2]]+[p[3]]+p[4]
+    # elif len(p)==5:
+    #     p[0]=p[1]+[p[2]]+[p[3]]+p[4]
 
 def p_type(p):
     '''type : WHOLE
@@ -146,10 +137,27 @@ def p_type(p):
     
     p[0]=p[1]
 
+def p_opr(p):
+    '''opr : '+' 
+           | '-' 
+           | '*' 
+           | '/' 
+           | '<' 
+           | '>' 
+           | '=' 
+           | '<' '='
+           | '>' '='
+           | '<' '>'
+           | '=' '=' '''
+    if len(p)==2:
+        p[0]=Data('OPR',p[1])
+    elif len(p)==3:
+        p[0]=Data('OPR',p[1]+p[2])
+
 def p_expr_val(p):
-    '''expr_val : INTEGER
+    '''expr_val : INT
                | FLOAT
-               | STRING
+               | STR
                | BOOL
                | ID'''
     

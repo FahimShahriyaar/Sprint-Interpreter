@@ -10,7 +10,11 @@ if __name__ == "__main__":
                 raise Exception('Error: fox file missing')
             with open(sys.argv[1]) as file:
                 data = file.read()
+                if data=='': raise SystemExit
+
                 prog = parser.parse(data)
+                if prog is None: raise SystemExit
+                
                 b = interpreter.Interpret(prog)
                 b.run()
         except Exception as e:

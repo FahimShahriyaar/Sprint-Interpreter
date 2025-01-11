@@ -1,6 +1,7 @@
-ACTION WHOLE power {WHOLE a WHOLE b}
+action whole test {whole a whole b}
 [
-    write 20
+    write a+b
+    write a*b
 ]
 
-CALL power {}
+call test {5 3}

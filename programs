@@ -1,0 +1,51 @@
+#variable declaration and initialization
+.........................................
+whole a=20
+decimal b=32.76
+word c=`bangladesh`
+flag d=true
+
+write a
+write b
+write c
+write d
+
+
+#variable assignment
+.........................................
+whole a=20
+decimal b=32.76
+word c=`bangladesh`
+flag d=true
+
+a=56
+b=28.9753
+c=`tangled`
+d=false
+
+write a
+write b
+write c
+write d
+
+#loop
+loop from 1 to 10 by 1
+[
+    write `hello`
+]
+
+#conditional
+whole a=20
+
+when a>40 [write `Tom and Jerry`]
+otherwise when a>30 [write `Tangled`]
+otherwise [write `Cars`]
+
+#function
+action whole test {whole a whole b}
+[
+    write a+b
+    write a*b
+]
+
+call test {5 3}

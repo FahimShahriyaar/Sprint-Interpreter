@@ -41,7 +41,7 @@ class Print:
         self.value=value
 
     def __repr__(self):
-        return f'{self.value}'
+        return f'{self.type} : {self.value}'
 
 class Read:
     def __init__(self,id):
@@ -74,8 +74,3 @@ class Call_Action:
     def __repr__(self):
         return f'Call :: {self.id} {self.params}'
     
-class activation_record:
-    def __init__(self,function_name,arguments):
-        self.function_name=function_name
-        self.arguments=arguments
-        self.param_arg_map={}
