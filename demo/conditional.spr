@@ -1,0 +1,5 @@
+whole a=20
+
+when a>40 [write `Tom and Jerry`]
+otherwise when a>30 [write `Tangled`]
+otherwise [write `Cars`]

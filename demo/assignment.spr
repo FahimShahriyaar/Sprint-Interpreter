@@ -1,0 +1,14 @@
+whole a=20
+decimal b=32.76
+word c=`bangladesh`
+flag d=true
+
+a=56
+b=28.9753
+c=`tangled`
+d=false
+
+write a
+write b
+write c
+write d

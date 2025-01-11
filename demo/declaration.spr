@@ -1,0 +1,9 @@
+whole a=20
+decimal b=32.76
+word c=`bangladesh`
+flag d=true
+
+write a
+write b
+write c
+write d
