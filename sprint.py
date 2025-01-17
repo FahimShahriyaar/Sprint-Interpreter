@@ -1,3 +1,6 @@
+# Programming Language: Sprint
+# Creator: Fahim Shahriyar
+
 import parser
 import interpreter
 import sys
@@ -24,4 +27,4 @@ if __name__ == "__main__":
                 print(e)
             
     elif len(sys.argv)==1:
-        print('Welcome To SprintLanguage')
+        print('Welcome To Sprint Language')

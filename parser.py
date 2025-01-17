@@ -170,7 +170,7 @@ def p_error(p):
     parser.error=1
 
 # Build the parser
-parser = yacc.yacc(debug=False)
+parser = yacc.yacc(debug=False,write_tables=False,tabmodule=None)
 
 def parse(data):
     parser.error = 0
